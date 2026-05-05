@@ -1,0 +1,23 @@
+# Entorno
+.env
+*.env
+
+# Base de datos SQLite (se regenera con seed.py)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# Docs generados (Swagger, etc.)
+docs/
