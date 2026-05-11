@@ -1,5 +1,6 @@
 import logging
 import sys
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,6 +8,7 @@ from fastapi import FastAPI
 from db import database
 from collector import scheduler, worker
 from api import metrics as metrics_router
+from llm import narrative
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -19,7 +21,11 @@ logging.basicConfig(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     database.init_db()
-    scheduler.start(collect_fn=worker.collect_and_store)
+    scheduler.start(
+        collect_fn=worker.collect_and_store,
+        narrative_fn=narrative.generate_and_store,
+    )
+    threading.Thread(target=narrative.generate_and_store, daemon=True).start()
     yield
     scheduler.stop()
 
