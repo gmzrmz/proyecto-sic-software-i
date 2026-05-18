@@ -8,6 +8,8 @@ from fastapi import FastAPI
 from db import database
 from collector import scheduler, worker
 from api import metrics as metrics_router
+from api import narratives as narratives_router
+from api import thresholds as thresholds_router
 from llm import narrative
 
 logging.basicConfig(
@@ -38,6 +40,8 @@ app = FastAPI(
 )
 
 app.include_router(metrics_router.router)
+app.include_router(narratives_router.router)
+app.include_router(thresholds_router.router)
 
 
 @app.get("/health", tags=["sistema"], summary="Estado operativo del sistema")

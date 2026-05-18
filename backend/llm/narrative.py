@@ -21,7 +21,7 @@ def generate_and_store() -> None:
     if not text:
         return
 
-    level = _classify(database.get_latest_metric())
+    level = _classify()
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     database.insert_narrative(timestamp=ts, text=text, level=level)
     logger.info("narrative_stored level=%s words=%d", level, len(text.split()))
@@ -63,14 +63,15 @@ def _call_llm(prompt: str) -> str:
     return resp.json()["choices"][0]["message"]["content"].strip()
 
 
-def _classify(metric: dict | None) -> str:
-    """Clasifica el nivel segun los umbrales configurados."""
-    if not metric:
+def _classify() -> str:
+    """Clasifica el nivel usando el promedio de CPU y RAM de las ultimas 3 horas."""
+    recent = database.get_metrics_by_hours(3)
+    if not recent:
         return "normal"
-    cpu = metric["cpu_pct"]
-    ram = metric["ram_pct"]
-    if cpu >= config.THRESHOLD_CPU or ram >= config.THRESHOLD_RAM:
+    avg_cpu = sum(m["cpu_pct"] for m in recent) / len(recent)
+    avg_ram = sum(m["ram_pct"] for m in recent) / len(recent)
+    if avg_cpu >= config.THRESHOLD_CPU or avg_ram >= config.THRESHOLD_RAM:
         return "critico"
-    if cpu >= config.THRESHOLD_CPU - 10 or ram >= config.THRESHOLD_RAM - 10:
+    if avg_cpu >= config.THRESHOLD_CPU - 10 or avg_ram >= config.THRESHOLD_RAM - 10:
         return "atencion"
     return "normal"
