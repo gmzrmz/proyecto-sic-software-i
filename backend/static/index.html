@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudSense</title>
+    <link rel="stylesheet" href="/static/styles.css?v=11">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>CloudSense</h1>
+        <div class="subtitle" id="instance-name">cargando...</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <div class="live-indicator">
+            <span class="live-dot"></span>
+            <span id="last-updated"></span>
+        </div>
+        <div class="header-badges">
+            <div class="header-badge-row">
+                <span class="header-badge-label">Simulador</span>
+                <span id="sim-mode-badge" class="badge normal">Normal</span>
+            </div>
+            <div class="header-badge-row">
+                <span class="header-badge-label">Estado</span>
+                <span id="alert-badge" class="badge normal">Normal</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <a href="/" class="nav-link">Inicio</a>
+    <a href="/dashboard" class="nav-link active">Monitor</a>
+    <a href="/simulacion-panel" class="nav-link">Simulacion</a>
+</nav>
+
+<div class="container">
+
+    <p class="refresh-info">Recoleccion cada 1 min &nbsp;·&nbsp; Refresco de pantalla cada 60 s</p>
+
+    <!-- Metricas actuales -->
+    <div class="grid-4">
+        <div class="card accent-blue">
+            <div class="card-label">CPU</div>
+            <div>
+                <span class="card-value" id="cpu-val">--</span>
+                <span class="card-unit">%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill cpu" id="cpu-bar" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="card accent-cyan">
+            <div class="card-label">RAM</div>
+            <div>
+                <span class="card-value" id="ram-val">--</span>
+                <span class="card-unit">%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill ram" id="ram-bar" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="card accent-green">
+            <div class="card-label">Red entrada</div>
+            <div>
+                <span class="card-value" id="net-in-val">--</span>
+                <span class="card-unit" id="net-in-unit">MB</span>
+            </div>
+        </div>
+        <div class="card accent-teal">
+            <div class="card-label">Red salida</div>
+            <div>
+                <span class="card-value" id="net-out-val">--</span>
+                <span class="card-unit" id="net-out-unit">MB</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graficas -->
+    <div class="grid-2">
+        <div class="card">
+            <div class="chart-header">
+                <p class="section-title" style="margin:0">Evolucion CPU y RAM</p>
+                <div class="time-selector">
+                    <button class="time-btn active" data-hours="1">1h</button>
+                    <button class="time-btn" data-hours="3">3h</button>
+                    <button class="time-btn" data-hours="24">24h</button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chart-cpu"></canvas>
+                <div class="chart-empty" id="chart-cpu-empty">Sin datos disponibles.</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="chart-header">
+                <p class="section-title" style="margin:0">Trafico de Red</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chart-net"></canvas>
+                <div class="chart-empty" id="chart-net-empty">Sin datos disponibles.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Narrativa -->
+    <div class="card narrative-card" id="narrative-card" style="margin-bottom:1.2rem">
+        <div class="narrative-header">
+            <p class="section-title" style="margin:0">Estado actual</p>
+            <span id="narrative-badge" class="badge normal">Normal</span>
+        </div>
+        <div id="narrative-body">
+            <div class="narrative-empty">
+                <span>Generando primera narrativa...</span>
+                <span style="font-size:0.75rem; color:#6e7681">El LLM analizara las metricas en breve</span>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <span class="narrative-ts" id="narrative-ts"></span>
+            <span id="narrative-stale" style="display:none; font-size:0.7rem; font-weight:600; color:#d97706; background:rgba(245,158,11,0.12); padding:0.15rem 0.5rem; border-radius:3px;">Dato desactualizado</span>
+        </div>
+    </div>
+
+    <!-- Historial -->
+    <details class="card" open>
+        <summary class="section-title collapsible-title">Historial de narrativas</summary>
+        <div class="history-list" id="history-list">
+            <p style="color:#6e7681; font-size:0.85rem">Cargando...</p>
+        </div>
+    </details>
+
+</div>
+
+<script src="/static/app.js?v=12"></script>
+</body>
+</html>

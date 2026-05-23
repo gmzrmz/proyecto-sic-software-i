@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 def generate_and_store() -> None:
-    context = build_context()
+    recent = database.get_metrics_by_hours(3)
+    context = build_context(recent)
     if not context:
         logger.warning("narrative_skip - sin metricas disponibles")
         return
@@ -21,7 +22,7 @@ def generate_and_store() -> None:
     if not text:
         return
 
-    level = _classify()
+    level = _classify(recent)
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     database.insert_narrative(timestamp=ts, text=text, level=level)
     logger.info("narrative_stored level=%s words=%d", level, len(text.split()))
@@ -63,9 +64,7 @@ def _call_llm(prompt: str) -> str:
     return resp.json()["choices"][0]["message"]["content"].strip()
 
 
-def _classify() -> str:
-    """Clasifica el nivel usando el promedio de CPU y RAM de las ultimas 3 horas."""
-    recent = database.get_metrics_by_hours(3)
+def _classify(recent: list) -> str:
     if not recent:
         return "normal"
     avg_cpu = sum(m["cpu_pct"] for m in recent) / len(recent)

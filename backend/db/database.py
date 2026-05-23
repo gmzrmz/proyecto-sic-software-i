@@ -37,7 +37,36 @@ def init_db() -> None:
                 level     TEXT    NOT NULL CHECK(level IN ('normal', 'atencion', 'critico'))
             );
             CREATE INDEX IF NOT EXISTS idx_narratives_ts ON narratives(timestamp);
+
+            CREATE TABLE IF NOT EXISTS settings (
+                key   TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            );
         """)
+        conn.commit()
+        conn.close()
+
+
+def check_db() -> bool:
+    try:
+        with _lock:
+            conn = _connect()
+            conn.execute("SELECT 1").fetchone()
+            conn.close()
+            return True
+    except Exception:
+        return False
+
+
+def insert_metrics_batch(rows: list) -> None:
+    with _lock:
+        conn = _connect()
+        conn.executemany(
+            "INSERT INTO metrics "
+            "(instance, timestamp, cpu_pct, ram_pct, net_bytes_in, net_bytes_out) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            rows,
+        )
         conn.commit()
         conn.close()
 
@@ -85,6 +114,38 @@ def get_metrics_by_hours(hours: int) -> list[dict]:
         ).fetchall()
         conn.close()
         return [dict(r) for r in rows]
+
+
+def get_simulator_state() -> dict:
+    with _lock:
+        conn = _connect()
+        row = conn.execute(
+            "SELECT value FROM settings WHERE key = 'sim_mode'"
+        ).fetchone()
+        conn.close()
+    return {"mode": row["value"] if row else "normal"}
+
+
+def save_simulator_state(mode: str) -> None:
+    with _lock:
+        conn = _connect()
+        conn.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('sim_mode', ?)", (mode,)
+        )
+        conn.commit()
+        conn.close()
+
+
+def clear_all() -> dict:
+    with _lock:
+        conn = _connect()
+        metrics_count   = conn.execute("SELECT COUNT(*) FROM metrics").fetchone()[0]
+        narrative_count = conn.execute("SELECT COUNT(*) FROM narratives").fetchone()[0]
+        conn.execute("DELETE FROM metrics")
+        conn.execute("DELETE FROM narratives")
+        conn.commit()
+        conn.close()
+    return {"metrics": metrics_count, "narratives": narrative_count}
 
 
 def insert_narrative(timestamp: str, text: str, level: str) -> None:

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudSense - Simulacion</title>
+    <link rel="stylesheet" href="/static/styles.css?v=11">
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>CloudSense</h1>
+        <div class="subtitle" id="sim-status-line">cargando estado...</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <span id="mode-badge" class="badge normal">Normal</span>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <a href="/" class="nav-link">Inicio</a>
+    <a href="/dashboard" class="nav-link">Monitor</a>
+    <a href="/simulacion-panel" class="nav-link active">Simulacion</a>
+</nav>
+
+<div class="container">
+
+    <!-- Como funciona -->
+    <details class="card explain-card" open>
+        <summary class="explain-title collapsible-title" style="margin-bottom:0; cursor:pointer;">Como funciona el simulador</summary>
+
+        <div style="margin-top:1rem;">
+            <p class="explain-text">
+                CloudSense genera metricas sinteticas que imitan el comportamiento de una instancia EC2 real.
+                El <strong>modo de carga</strong> determina los rangos de CPU, RAM y red que se usaran en las proximas lecturas.
+            </p>
+            <p class="explain-text" style="background:rgba(34,144,204,0.07); border-left:3px solid #2290cc; padding:0.65rem 0.9rem; border-radius:0 4px 4px 0; margin-bottom:0.9rem;">
+                <strong>Instancia simulada: t3.medium en us-east-1.</strong>
+                Se uso este tipo porque es el mas comun en despliegues AWS de proposito general: 2 vCPU, 4 GB RAM,
+                precio moderado. En un entorno real, la plataforma se conectaria a CloudWatch para obtener metricas
+                de cualquier instancia del cliente; aqui se simula ese flujo con datos sinteticos bajo los mismos rangos.
+            </p>
+
+            <table class="mode-table">
+                <thead>
+                    <tr>
+                        <th>Modo</th>
+                        <th>CPU</th>
+                        <th>RAM</th>
+                        <th>Red entrada</th>
+                        <th>Red salida</th>
+                        <th>Descripcion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge normal" style="font-size:0.65rem">Normal</span></td>
+                        <td>30 - 65 %</td>
+                        <td>35 - 60 %</td>
+                        <td colspan="2" style="color:#7aaac8; font-style:italic">Variable segun hora del dia</td>
+                        <td>Operacion rutinaria. Trafico de red proporcional a la hora (8am-5pm mas alto).</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge atencion" style="font-size:0.65rem">Alta carga</span></td>
+                        <td>70 - 88 %</td>
+                        <td>65 - 82 %</td>
+                        <td>4 - 15 MB/s</td>
+                        <td>6 - 25 MB/s</td>
+                        <td>Pico de demanda. Mas salida que entrada: el servidor esta respondiendo muchas peticiones.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge critico" style="font-size:0.65rem">Critico</span></td>
+                        <td>88 - 99 %</td>
+                        <td>82 - 97 %</td>
+                        <td>10 - 35 MB/s</td>
+                        <td>1 - 8 MB/s</td>
+                        <td>Saturacion. Mucha entrada (flood/DDoS), poca salida: el servidor no puede responder.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge nocturno" style="font-size:0.65rem">Nocturno</span></td>
+                        <td>8 - 22 %</td>
+                        <td>18 - 32 %</td>
+                        <td>20 - 350 KB/s</td>
+                        <td>8 - 120 KB/s</td>
+                        <td>Bajo uso. Solo healthchecks, cron jobs y tareas de mantenimiento.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="explain-text" style="margin-top:1rem; padding-top:0.9rem; border-top:1px solid rgba(144,196,232,0.3);">
+                <strong>Por que el historial no cambia al cambiar modo:</strong> cada lectura se escribe en la base de datos
+                de forma permanente. El modo solo afecta la siguiente lectura que genere el scheduler (cada 5 minutos) o
+                la que tu mismo fuerce con <em>Forzar lectura</em>. Este comportamiento replica sistemas de monitoreo reales
+                como CloudWatch o Grafana: el historial es inmutable y auditables.
+            </p>
+            <p class="explain-text">
+                Para ver el efecto de un cambio de modo de forma inmediata, cambia el modo y luego presiona
+                <em>Forzar lectura</em>. El nuevo punto aparecera al final de la grafica en el monitor.
+            </p>
+        </div>
+    </details>
+
+    <!-- Controles -->
+    <div class="card" style="margin-bottom:1.2rem">
+        <div class="sim-label" style="margin-bottom:0.75rem">Modo de carga</div>
+        <div id="sim-modes" class="sim-modes"></div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="grid-2" style="margin-bottom:1.2rem">
+
+        <div class="card">
+            <div class="sim-label" style="margin-bottom:0.75rem">Acciones inmediatas</div>
+            <p class="explain-text" style="font-size:0.78rem; margin-bottom:0.75rem">
+                Genera datos sin esperar el ciclo automatico del scheduler.
+            </p>
+            <div class="sim-actions">
+                <button class="sim-action-btn" id="btn-force-read" onclick="forceRead()">Forzar lectura</button>
+                <button class="sim-action-btn" id="btn-force-narrative" onclick="forceNarrative()">Generar narrativa</button>
+            </div>
+        </div>
+
+        <div class="card danger-card">
+            <div class="explain-title">Reinicio de datos</div>
+            <p class="explain-text" style="font-size:0.78rem">
+                Borra todos los registros y genera un <strong>escenario nuevo y distinto</strong> para las ultimas 24 horas:
+                patron de negocio (8am-5pm) con 1 a 3 eventos de carga aleatorios (picos con ramp-up/down suave,
+                duracion y severidad variables). Cada reset cuenta una historia diferente.
+                Luego el scheduler continua en tiempo real segun el modo activo.
+            </p>
+            <button class="btn-danger" id="btn-reset" onclick="resetAll()">
+                Borrar registros y reiniciar
+            </button>
+            <div id="reset-feedback" class="reset-feedback" style="display:none"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/static/simulacion.js?v=12"></script>
+</body>
+</html>

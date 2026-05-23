@@ -11,10 +11,5 @@ class MetricReading:
 
 
 class MetricSource(ABC):
-    """Interfaz que toda fuente de datos debe implementar.
-
-    Intercambiable via DATA_SOURCE env var sin tocar el resto del sistema.
-    """
-
     @abstractmethod
     def collect(self) -> MetricReading: ...

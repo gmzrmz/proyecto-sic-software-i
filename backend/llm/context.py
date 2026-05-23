@@ -1,12 +1,11 @@
 from datetime import datetime, timezone
 
 import config
+import simulator
 from db import database
 
 
-def build_context() -> str:
-    """Construye el bloque de texto que se envia al LLM como prompt."""
-    recent = database.get_metrics_by_hours(3)
+def build_context(recent: list) -> str:
     if not recent:
         return ""
 
@@ -14,7 +13,6 @@ def build_context() -> str:
     avg_ram_3h = sum(m["ram_pct"] for m in recent) / len(recent)
     latest = recent[-1]
 
-    # promedio historico misma hora para contextualizar la tendencia
     current_hour = datetime.now(timezone.utc).hour
     week_data = database.get_metrics_by_hours(24 * 7)
     same_hour = [m for m in week_data if int(m["timestamp"][11:13]) == current_hour]
@@ -30,7 +28,7 @@ def build_context() -> str:
     ram_trend = ((avg_ram_3h - hist_ram) / hist_ram * 100) if hist_ram else 0
 
     return (
-        f"Estado actual del servidor '{config.INSTANCE_NAME}':\n"
+        f"Estado actual del servidor '{simulator.INSTANCE['label']}':\n"
         f"- CPU: {latest['cpu_pct']}%"
         f" (promedio 3h: {avg_cpu_3h:.1f}%,"
         f" historico misma hora: {hist_cpu:.1f}%,"

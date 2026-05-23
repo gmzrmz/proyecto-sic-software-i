@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudSense - Monitoreo de Infraestructura AWS</title>
+    <link rel="stylesheet" href="/static/styles.css?v=11">
+    <style>
+        /* ── Hero ── */
+        .l-hero {
+            padding: 4rem 2rem 3.5rem;
+            text-align: center;
+        }
+        .l-eyebrow {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #2290cc;
+            margin-bottom: 0.75rem;
+        }
+        .l-title {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(180deg, #1a6fa0 0%, #0a3a60 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .l-subtitle {
+            font-size: 1.05rem;
+            color: #3a7aaa;
+            margin-bottom: 2.2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.65;
+        }
+        .l-cta {
+            display: inline-block;
+            padding: 0.9rem 3.2rem;
+            background: linear-gradient(180deg, #5bb8f0 0%, #2290cc 55%, #1a78b0 100%);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 5px;
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 20px rgba(34,144,204,0.45), inset 0 1px 0 rgba(255,255,255,0.4);
+            transition: transform 0.18s, box-shadow 0.18s;
+            text-shadow: 0 1px 3px rgba(0,60,120,0.35);
+        }
+        .l-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(34,144,204,0.55), inset 0 1px 0 rgba(255,255,255,0.4); }
+
+        /* ── Feature blocks ── */
+        .l-features {
+            padding: 0 2rem 3rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .l-features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+        }
+        .l-feat {
+            background: rgba(255,255,255,0.84);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.95);
+            border-radius: 6px;
+            border-top: 4px solid #2290cc;
+            padding: 2rem 1.8rem 2.2rem;
+            box-shadow: 0 4px 24px rgba(30,120,200,0.1), 0 1px 4px rgba(0,0,0,0.07);
+        }
+        .l-feat:nth-child(2) { border-top-color: #6366f1; }
+        .l-feat:nth-child(3) { border-top-color: #10b981; }
+        .l-feat-num {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: rgba(34,144,204,0.18);
+            line-height: 1;
+            margin-bottom: 0.9rem;
+            font-variant-numeric: tabular-nums;
+        }
+        .l-feat:nth-child(2) .l-feat-num { color: rgba(99,102,241,0.18); }
+        .l-feat:nth-child(3) .l-feat-num { color: rgba(16,185,129,0.18); }
+        .l-feat-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a3a52;
+            margin-bottom: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .l-feat-desc {
+            font-size: 0.84rem;
+            color: #3a6080;
+            line-height: 1.75;
+        }
+
+        /* ── Tech strip ── */
+        .l-tech {
+            border-top: 1px solid rgba(144,196,232,0.4);
+            padding: 1.8rem 2rem;
+            text-align: center;
+        }
+        .l-tech-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #6a9ab8;
+            margin-bottom: 0.8rem;
+        }
+        .l-tech-row { display: flex; justify-content: center; gap: 0.45rem; flex-wrap: wrap; }
+        .l-tech-b {
+            background: rgba(255,255,255,0.85);
+            border: 1px solid #90c4e8;
+            border-radius: 3px;
+            padding: 0.22rem 0.72rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #1a6fa0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        @media (max-width: 800px) {
+            .l-features-grid { grid-template-columns: 1fr; }
+            .l-title { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>CloudSense</h1>
+        <div class="subtitle">Plataforma de monitoreo de infraestructura AWS</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <span id="health-badge" class="badge normal" style="font-size:0.68rem">Sistema operativo</span>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <a href="/"                 class="nav-link active">Inicio</a>
+    <a href="/dashboard"        class="nav-link">Monitor</a>
+    <a href="/simulacion-panel" class="nav-link">Simulacion</a>
+</nav>
+
+<section class="l-hero">
+    <div class="l-eyebrow">Plataforma de monitoreo cloud</div>
+    <h2 class="l-title">CloudSense</h2>
+    <p class="l-subtitle">Monitoreo de infraestructura AWS con analisis automatico en lenguaje natural generado por inteligencia artificial</p>
+    <a href="/dashboard" class="l-cta">Iniciar Demo</a>
+</section>
+
+<section class="l-features">
+    <div class="l-features-grid">
+
+        <div class="l-feat">
+            <div class="l-feat-num">01</div>
+            <div class="l-feat-title">Metricas en tiempo real</div>
+            <div class="l-feat-desc">
+                CPU, RAM y trafico de red recolectados cada minuto desde instancias EC2 simuladas.
+                Visualizacion historica con graficas interactivas, umbrales configurables
+                y alertas visuales cuando los valores superan los limites definidos.
+            </div>
+        </div>
+
+        <div class="l-feat">
+            <div class="l-feat-num">02</div>
+            <div class="l-feat-title">Narrativas con inteligencia artificial</div>
+            <div class="l-feat-desc">
+                Cada hora, un modelo de lenguaje analiza el estado del sistema y genera
+                un resumen en espanol con clasificacion automatica de severidad:
+                Normal, Atencion o Critico. El historial de narrativas queda registrado
+                para auditoria y seguimiento.
+            </div>
+        </div>
+
+        <div class="l-feat">
+            <div class="l-feat-num">03</div>
+            <div class="l-feat-title">Simulador interactivo</div>
+            <div class="l-feat-desc">
+                Controla el comportamiento del sistema en tiempo real: cambia entre modos
+                Normal, Alta carga, Critico y Nocturno, cada uno con rangos propios de
+                CPU, RAM y red. Genera escenarios historicos unicos con picos realistas
+                para demostraciones en vivo.
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div class="l-tech">
+    <div class="l-tech-label">Construido con</div>
+    <div class="l-tech-row">
+        <span class="l-tech-b">FastAPI</span>
+        <span class="l-tech-b">Python 3.11</span>
+        <span class="l-tech-b">SQLite</span>
+        <span class="l-tech-b">Chart.js</span>
+        <span class="l-tech-b">Ollama LLM</span>
+        <span class="l-tech-b">APScheduler</span>
+        <span class="l-tech-b">Podman</span>
+    </div>
+</div>
+
+<script>
+fetch('/health').then(r => r.json()).then(d => {
+    const b = document.getElementById('health-badge');
+    const ok = d.api_status === 'OK' && d.bd_status === 'OK' && d.scheduler_status === 'OK';
+    b.textContent = ok ? 'Sistema operativo' : 'Sistema degradado';
+    b.className = 'badge ' + (ok ? 'normal' : 'atencion');
+}).catch(() => {
+    const b = document.getElementById('health-badge');
+    b.textContent = 'Sin conexion';
+    b.className = 'badge critico';
+});
+</script>
+
+</body>
+</html>
