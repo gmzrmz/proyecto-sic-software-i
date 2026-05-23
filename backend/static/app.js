@@ -327,4 +327,8 @@ document.querySelectorAll('.time-btn[data-hours]').forEach(btn => {
 });
 
 refresh();
-setInterval(refresh, 60_000);
+setInterval(refresh, 30_000);
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refresh();
+});
