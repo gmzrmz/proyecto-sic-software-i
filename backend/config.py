@@ -8,6 +8,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).parent
 
 DATA_SOURCE = os.getenv("DATA_SOURCE", "synthetic")
+INSTANCE_DESCRIPTION = os.getenv("INSTANCE_DESCRIPTION", "")
 DB_PATH = os.getenv("DB_PATH", str(BASE_DIR.parent / "data" / "cloudsense.db"))
 
 COLLECT_INTERVAL_MINUTES = int(os.getenv("COLLECT_INTERVAL_MINUTES", "1"))

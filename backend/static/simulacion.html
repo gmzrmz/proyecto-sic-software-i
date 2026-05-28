@@ -107,6 +107,25 @@
         <div id="sim-modes" class="sim-modes"></div>
     </div>
 
+    <!-- Contexto de negocio -->
+    <div class="card" style="margin-bottom:1.2rem">
+        <div class="sim-label" style="margin-bottom:0.5rem">Contexto del servidor para la IA</div>
+        <p class="explain-text" style="font-size:0.78rem; margin-bottom:0.75rem">
+            Describe brevemente que hace este servidor. La IA usara este contexto para generar narrativas mas utiles y especificas.
+        </p>
+        <textarea id="instance-description"
+            placeholder="Ejemplo: Servidor web que atiende peticiones HTTP de una aplicacion de comercio electronico con picos de trafico entre 8am y 10pm."
+            style="width:100%; box-sizing:border-box; min-height:80px; padding:0.6rem 0.8rem;
+                   border:1px solid #90c4e8; border-radius:4px; font-family:inherit;
+                   font-size:0.82rem; color:#1a3a52; background:rgba(255,255,255,0.9);
+                   resize:vertical; line-height:1.5;"
+        ></textarea>
+        <div style="display:flex; justify-content:flex-end; margin-top:0.6rem; gap:0.75rem; align-items:center;">
+            <span id="desc-feedback" style="font-size:0.75rem; color:#10b981; display:none">Guardado</span>
+            <button class="sim-action-btn" id="btn-save-desc" onclick="saveDescription()">Guardar contexto</button>
+        </div>
+    </div>
+
     <!-- Acciones -->
     <div class="grid-2" style="margin-bottom:1.2rem">
 
@@ -139,6 +158,6 @@
 
 </div>
 
-<script src="/static/simulacion.js?v=12"></script>
+<script src="/static/simulacion.js?v=15"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 const LABELS = { normal: 'Normal', atencion: 'Atencion', critico: 'Critico' };
 
 let thresholds   = { threshold_cpu: 85, threshold_ram: 85 };
-let currentHours = 1;
+let currentHours = parseInt(localStorage.getItem('cloudsense_hours') || '1');
 
 const chartCpu = new Chart(document.getElementById('chart-cpu').getContext('2d'), {
     type: 'line',
@@ -297,6 +297,8 @@ async function loadHistory() {
     `).join('');
 }
 
+let _narrativeCounterInterval = null;
+
 async function loadSimMode() {
     const res = await fetch('/simulacion/estado');
     if (!res.ok) return;
@@ -307,6 +309,24 @@ async function loadSimMode() {
     badge.className   = 'badge ' + (cls[d.mode] || 'normal');
     const instLabel = d.instance.label || d.instance.id || d.instance;
     document.getElementById('instance-name').textContent = 'Instancia: ' + instLabel;
+
+    if (d.narrative_generating && d.narrative_started_at) {
+        const startedAt = new Date(d.narrative_started_at);
+        if (!_narrativeCounterInterval) {
+            _narrativeCounterInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+                document.getElementById('narrative-body').innerHTML = `
+                    <div class="narrative-empty">
+                        <span>Generando narrativa con IA... ${elapsed}s</span>
+                        <span style="font-size:0.75rem; color:#6e7681">El LLM esta analizando las metricas</span>
+                    </div>`;
+            }, 1000);
+        }
+    } else if (_narrativeCounterInterval) {
+        clearInterval(_narrativeCounterInterval);
+        _narrativeCounterInterval = null;
+        loadNarrative();
+    }
 }
 
 async function refresh() {
@@ -319,12 +339,27 @@ function setPresetHours(btn, hours) {
     document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentHours = hours;
+    localStorage.setItem('cloudsense_hours', hours);
+    fetch('/simulacion/ventana', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hours }),
+    });
     loadChart();
 }
 
 document.querySelectorAll('.time-btn[data-hours]').forEach(btn => {
     btn.addEventListener('click', () => setPresetHours(btn, parseInt(btn.dataset.hours)));
 });
+
+// Aplica la ventana guardada al cargar la pagina
+(function applyStoredHours() {
+    const btn = document.querySelector(`.time-btn[data-hours="${currentHours}"]`);
+    if (btn) {
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+})();
 
 refresh();
 setInterval(refresh, 30_000);

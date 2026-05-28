@@ -6,6 +6,34 @@ async function loadSimulation() {
     simState = await res.json();
     renderModes();
     updateHeader();
+    loadDescription();
+    if (simState.narrative_generating) {
+        startNarrativePolling(simState.narrative_started_at);
+    }
+}
+
+async function loadDescription() {
+    const res = await fetch('/simulacion/descripcion');
+    if (!res.ok) return;
+    const d = await res.json();
+    document.getElementById('instance-description').value = d.descripcion || '';
+}
+
+async function saveDescription() {
+    const btn = document.getElementById('btn-save-desc');
+    const feedback = document.getElementById('desc-feedback');
+    const texto = document.getElementById('instance-description').value.trim();
+    btn.disabled = true;
+    const res = await fetch('/simulacion/descripcion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descripcion: texto }),
+    });
+    btn.disabled = false;
+    if (res.ok) {
+        feedback.style.display = 'inline';
+        setTimeout(() => { feedback.style.display = 'none'; }, 2500);
+    }
 }
 
 function renderModes() {
@@ -44,13 +72,42 @@ async function forceRead() {
     setTimeout(() => { btn.textContent = 'Forzar lectura'; btn.disabled = false; }, 2200);
 }
 
-async function forceNarrative() {
+function startNarrativePolling(startedAt) {
     const btn = document.getElementById('btn-force-narrative');
     btn.disabled = true;
-    btn.textContent = 'Generando...';
+    const startTime = startedAt ? new Date(startedAt) : new Date();
+
+    const timer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        btn.textContent = `Generando... ${elapsed}s`;
+    }, 1000);
+
+    const poll = setInterval(async () => {
+        const estado = await fetch('/simulacion/estado').then(r => r.json()).catch(() => null);
+        if (estado && !estado.narrative_generating) {
+            clearInterval(poll);
+            clearInterval(timer);
+            btn.textContent = 'Completado!';
+            setTimeout(() => { btn.textContent = 'Generar narrativa'; btn.disabled = false; }, 2500);
+        }
+    }, 2000);
+}
+
+async function forceNarrative() {
+    const btn = document.getElementById('btn-force-narrative');
+    if (btn.disabled) return;
+    btn.disabled = true;
+
     const res = await fetch('/simulacion/narrativa', { method: 'POST' });
-    btn.textContent = res.ok ? 'Completado!' : 'Error al generar';
-    setTimeout(() => { btn.textContent = 'Generar narrativa'; btn.disabled = false; }, 3000);
+    const data = await res.json();
+
+    if (!res.ok || data.status === 'already_generating') {
+        btn.textContent = data.status === 'already_generating' ? 'Ya generando...' : 'Error';
+        setTimeout(() => { btn.textContent = 'Generar narrativa'; btn.disabled = false; }, 3000);
+        return;
+    }
+
+    startNarrativePolling(null);
 }
 
 async function resetAll() {
