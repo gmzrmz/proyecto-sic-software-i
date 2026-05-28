@@ -23,29 +23,50 @@ compose.yml
 
 La narrativa sigue un pipeline hibrido: el LLM escribe la oracion descriptiva de CPU/RAM, Python construye deterministicamente la oracion de red y las recomendaciones de AWS.
 
-## Requisitos
+## Requisitos previos
 
-- [Podman](https://podman.io/) (o Docker) con `podman-compose` / `docker compose`
-- 4 GB de RAM libres para el modelo llama3.2
+El sistema corre en contenedores. Antes de continuar necesitas tener instalado:
+
+### En Windows (recomendado)
+
+1. **WSL 2** - subsistema de Linux para Windows. Abra PowerShell como administrador y ejecute:
+   ```powershell
+   wsl --install
+   ```
+   Reinicie el equipo cuando lo solicite. Si ya tiene WSL, verifique que sea version 2 con `wsl --status`.
+
+2. **Podman Desktop** - descárguelo desde https://podman.io/. Durante la instalación active la opción de instalar WSL si se lo solicita. Una vez instalado, abra Podman Desktop y asegurese de que la maquina virtual este corriendo (boton "Start" en la pantalla principal).
+
+3. **podman-compose** - en una terminal (cmd o PowerShell):
+   ```powershell
+   pip install podman-compose
+   ```
+
+4. **4 GB de RAM libres** para el modelo llama3.2.
+
+### Alternativa con Docker
+
+Si ya tiene Docker Desktop instalado funciona igual. Reemplace `podman compose` por `docker compose` en todos los comandos.
 
 ## Inicio rapido
 
 ```bash
-# 1. Clonar y entrar al repositorio
+# 1. Clonar el repositorio
 git clone <url-del-repo>
 cd proyecto-sic-software-i
 
-# 2. Copiar y ajustar variables de entorno
+# 2. Copiar el archivo de variables de entorno
 cp .env.example .env
 
-# 3. Levantar los servicios (la primera vez descarga el modelo, tarda ~5 min)
+# 3. Levantar los servicios
+#    La primera vez descarga el modelo llama3.2, puede tardar 5-10 minutos segun la conexion
 podman compose up -d
 
-# 4. Abrir el navegador
-open http://localhost:8000
+# 4. Abrir en el navegador
+http://localhost:8000
 ```
 
-> La primera narrativa se genera automaticamente despues de que el scheduler completa el primer ciclo (~60 minutos). Para generarla de inmediato, usa el boton **Generar narrativa** en el panel de simulacion.
+> La primera narrativa se genera automaticamente cada 60 minutos. Para verla de inmediato sin esperar, ir al panel **Simulacion** y hacer clic en **Generar narrativa**.
 
 ## Variables de entorno
 
